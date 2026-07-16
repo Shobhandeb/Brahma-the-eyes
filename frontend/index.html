@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAHMA | The All-Seeing AI Monitoring Platform</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="brahma-bg">
+        <div class="bg-ring ring-1"></div>
+        <div class="bg-ring ring-2"></div>
+        <div class="bg-glow"></div>
+    </div>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <i data-lucide="aperture" class="logo-icon"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>BRAHMA</h2>
+                    <span>One Vision. Infinite Awareness.</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-menu">
+                <p class="menu-label">Platform</p>
+                <a href="#" class="menu-item active" data-target="view-dashboard">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="#" class="menu-item" data-target="view-rules">
+                    <i data-lucide="shield-alert"></i> Rules
+                </a>
+                <a href="#" class="menu-item" data-target="view-monitoring">
+                    <i data-lucide="cctv"></i> Live Monitoring
+                </a>
+                <a href="#" class="menu-item" data-target="view-alerts">
+                    <i data-lucide="bell-ring"></i> Alerts
+                </a>
+                
+                <p class="menu-label">Insights</p>
+                <a href="#" class="menu-item" data-target="view-analytics">
+                    <i data-lucide="bar-chart-2"></i> Analytics
+                </a>
+                <a href="#" class="menu-item" data-target="view-history">
+                    <i data-lucide="history"></i> History
+                </a>
+                
+                <p class="menu-label">System</p>
+                <a href="#" class="menu-item" data-target="view-about">
+                    <i data-lucide="cpu"></i> About Us
+                </a>
+                <a href="#" class="menu-item" data-target="view-settings">
+                    <i data-lucide="settings"></i> Settings
+                </a>
+                <a href="#" class="menu-item" data-target="view-profile">
+                    <i data-lucide="user"></i> Profile
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="status-container">
+                    <span class="status-pulse online" id="status-dot"></span>
+                    <span id="status-text">System Connected</span>
+                </div>
+                <a href="#" class="menu-item logout">
+                    <i data-lucide="log-out"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-nav">
+                <div class="page-title">
+                    <h1 id="dynamic-page-title">Dashboard</h1>
+                </div>
+                <div class="system-health">
+                    <div class="health-card">
+                        <i data-lucide="activity" class="health-icon success"></i>
+                        <div class="health-info">
+                            <span class="health-label">YOLOv8 Engine</span>
+                            <span class="health-value success-text">Online</span>
+                        </div>
+                    </div>
+                    <div class="health-card">
+                        <i data-lucide="wifi" class="health-icon cyan"></i>
+                        <div class="health-info">
+                            <span class="health-label">WebSocket</span>
+                            <span class="health-value cyan-text" id="ws-status">Disconnected</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="view-dashboard" class="page-view">
+                <div class="welcome-hero glass-card animate-slide-up">
+                    <div class="hero-content">
+                        <h2>The Creator’s eyes</h2>
+                        <p class="subtitle">"Through the four faces of awareness, no anomaly goes unseen."</p>
+                        <p class="description">AI-powered intelligent monitoring with real-time object detection and rule-based event automation. Observe everything. Every frame matters.</p>
+                    </div>
+                    <i data-lucide="eye" class="hero-bg-icon"></i>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card glass-card">
+                        <div class="stat-header"><i data-lucide="video"></i> Active Cameras</div>
+                        <div class="stat-value">1 <span class="trend up">Live</span></div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-header"><i data-lucide="layers"></i> Active Rules</div>
+                        <div class="stat-value" id="stat-rules">3 <span class="trend">Stable</span></div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-header"><i data-lucide="scan"></i> Objects Detected</div>
+                        <div class="stat-value">12.4k <span class="trend up">+14%</span></div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-header"><i data-lucide="alert-triangle"></i> Alerts Today</div>
+                        <div class="stat-value" id="alert-counter-display">0 <span class="trend down">Low</span></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <section class="glass-card nlp-section animate-slide-up" style="animation-delay: 0.1s;">
+                        <div class="card-header">
+                            <h2><i data-lucide="terminal"></i> Command Line Intelligence</h2>
+                        </div>
+                        <p class="card-instruction">What to check now?</p>
+                        
+                        <form id="nlp-rule-form">
+                            <div class="input-wrapper">
+                                <textarea id="nlp-input" placeholder="e.g., Alert me whenever a person comes near a bottle." required></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary" id="btn-submit-nlp">
+                                <i data-lucide="zap"></i> Generate Automation Rule
+                            </button>
+                        </form>
+                    </section>
+
+                    <section class="glass-card alert-section animate-slide-up" style="animation-delay: 0.2s;">
+                        <div class="card-header">
+                            <h2><i data-lucide="radio-receiver"></i> Karmic Ledger <span class="badge hidden" id="alert-counter">0</span></h2>
+                        </div>
+                        <div class="realtime-alert-container" id="realtime-alerts-feed">
+                            <div class="feed-placeholder">
+                                <div class="grey-shape-scanner"></div>
+                                <p>Listening for omnidirectional events...</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div id="view-rules" class="page-view hidden-view">
+                <section class="glass-card full-height">
+                    <div class="card-header flex-between">
+                        <h2>Active Detection Pipeline Constraints</h2>
+                        <button class="btn-outline"><i data-lucide="filter"></i> Filter</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="enterprise-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Primary Entity</th>
+                                    <th>Condition Metric</th>
+                                    <th>Secondary Entity</th>
+                                    <th>Metric Limit</th>
+                                    <th>Operational State</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rules-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div id="view-about" class="page-view hidden-view">
+                <div class="about-hero glass-card text-center">
+                    <h1 class="gradient-text">Meet the Minds Behind BRAHMA</h1>
+                    <p>BRAHMA is an AI-powered intelligent monitoring platform built to transform real-time object detection into actionable insights through intelligent automation and customizable rule-based surveillance.</p>
+                    <div class="mission-box">
+                        <h3>Our Mission</h3>
+                        <p>To build intelligent monitoring systems that observe, understand, and respond in real time.</p>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Core Values</h3>
+                <div class="stats-grid values-grid">
+                    <div class="glass-card text-center"><i data-lucide="lightbulb" class="violet-text"></i><h4>Innovation</h4></div>
+                    <div class="glass-card text-center"><i data-lucide="shield-check" class="cyan-text"></i><h4>Reliability</h4></div>
+                    <div class="glass-card text-center"><i data-lucide="brain-circuit" class="violet-text"></i><h4>Intelligence</h4></div>
+                    <div class="glass-card text-center"><i data-lucide="eye" class="cyan-text"></i><h4>Transparency</h4></div>
+                </div>
+
+                <h3 class="section-title">The Engineering Team</h3>
+                <div class="team-grid">
+                    <div class="team-card glass-card">
+                        <div class="avatar"><i data-lucide="user"></i></div>
+                        <h4>Developer 1</h4>
+                        <span class="role">Founder & Full Stack</span>
+                        <p>Responsible for architecture, backend systems, and AI integration.</p>
+                        <div class="social-links">
+                            <i data-lucide="github"></i> <i data-lucide="linkedin"></i> <i data-lucide="mail"></i>
+                        </div>
+                    </div>
+                    <div class="team-card glass-card">
+                        <div class="avatar"><i data-lucide="layout"></i></div>
+                        <h4>Developer 2</h4>
+                        <span class="role">Frontend Engineer</span>
+                        <p>Designed the user experience, responsive interface, and components.</p>
+                        <div class="social-links">
+                            <i data-lucide="github"></i> <i data-lucide="linkedin"></i> <i data-lucide="mail"></i>
+                        </div>
+                    </div>
+                    <div class="team-card glass-card">
+                        <div class="avatar"><i data-lucide="scan-eye"></i></div>
+                        <h4>Developer 3</h4>
+                        <span class="role">AI & Vision Engineer</span>
+                        <p>Developed YOLO object detection, tracking, and rule processing.</p>
+                        <div class="social-links">
+                            <i data-lucide="github"></i> <i data-lucide="linkedin"></i> <i data-lucide="mail"></i>
+                        </div>
+                    </div>
+                    <div class="team-card glass-card">
+                        <div class="avatar"><i data-lucide="server"></i></div>
+                        <h4>Developer 4</h4>
+                        <span class="role">DevOps & Infrastructure</span>
+                        <p>Deployment, monitoring, optimization, and cloud infrastructure.</p>
+                        <div class="social-links">
+                            <i data-lucide="github"></i> <i data-lucide="linkedin"></i> <i data-lucide="mail"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="section-title">Technology Stack</h3>
+                <div class="tech-stack">
+                    <span class="tech-badge">Python</span>
+                    <span class="tech-badge">FastAPI</span>
+                    <span class="tech-badge">React</span>
+                    <span class="tech-badge">TypeScript</span>
+                    <span class="tech-badge">Tailwind CSS</span>
+                    <span class="tech-badge">YOLOv8</span>
+                    <span class="tech-badge">OpenCV</span>
+                    <span class="tech-badge">Sentence Transformers</span>
+                    <span class="tech-badge">Docker</span>
+                </div>
+
+                <h3 class="section-title">Intelligence Workflow</h3>
+                <div class="workflow-timeline glass-card">
+                    <div class="timeline-step"><i data-lucide="message-square"></i> Natural Language</div>
+                    <div class="timeline-line"></div>
+                    <div class="timeline-step"><i data-lucide="cpu"></i> AI Parser</div>
+                    <div class="timeline-line"></div>
+                    <div class="timeline-step"><i data-lucide="server"></i> Rule Engine</div>
+                    <div class="timeline-line"></div>
+                    <div class="timeline-step"><i data-lucide="cctv"></i> YOLO Detection</div>
+                    <div class="timeline-line"></div>
+                    <div class="timeline-step"><i data-lucide="bell-ring"></i> Dashboard Alert</div>
+                </div>
+
+                <footer class="enterprise-footer">
+                    <div class="footer-content">
+                        <div>
+                            <h4>BRAHMA Platform</h4>
+                            <p>One Vision. Infinite Awareness.</p>
+                        </div>
+                        <div>
+                            <h4>Resources</h4>
+                            <a href="#">Documentation</a>
+                            <a href="#">GitHub Repository</a>
+                        </div>
+                        <div>
+                            <h4>Legal</h4>
+                            <a href="#">Privacy Policy</a>
+                            <a href="#">Terms of Service</a>
+                        </div>
+                    </div>
+                    <div class="copyright">© 2026 BRAHMA AI Monitoring Platform. All rights reserved.</div>
+                </footer>
+            </div>
+
+            <div id="view-monitoring" class="page-view hidden-view">
+                <section class="glass-card camera-panel">
+                    <div class="camera-header flex-between">
+                        <h2><i data-lucide="video"></i> Primary Feed (Cam 01)</h2>
+                        <span class="live-badge">● LIVE 30 FPS</span>
+                    </div>
+                    <div class="camera-placeholder">
+                        <i data-lucide="cctv" class="large-icon"></i>
+                        <p>Camera feed currently rendering via native OpenCV window.</p>
+                        <p class="subtitle">WebRTC browser integration pending.</p>
+                    </div>
+                </section>
+            </div>
+            
+            <div id="view-alerts" class="page-view hidden-view">
+                <section class="glass-card"><h2>Alert History</h2><p>Timeline visualization loading...</p></section>
+            </div>
+            <div id="view-analytics" class="page-view hidden-view">
+                <section class="glass-card"><h2>Detection Analytics</h2><p>Charts and heatmaps loading...</p></section>
+            </div>
+            <div id="view-history" class="page-view hidden-view">
+                <section class="glass-card"><h2>System Log History</h2><p>Enterprise logs loading...</p></section>
+            </div>
+            <div id="view-settings" class="page-view hidden-view">
+                <section class="glass-card"><h2>System Configuration</h2><p>Hardware and AI Model settings loading...</p></section>
+            </div>
+            <div id="view-profile" class="page-view hidden-view">
+                <section class="glass-card"><h2>Operator Profile</h2><p>Access management loading...</p></section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>

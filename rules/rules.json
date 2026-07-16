@@ -1,0 +1,29 @@
+[
+    {
+        "id": 1,
+        "enabled": true,
+        "object1": "bottle",
+        "object2": null,
+        "condition": "appears",
+        "distance": 300,
+        "action": "alert"
+    },
+    {
+        "id": 2,
+        "enabled": true,
+        "object1": "person",
+        "object2": "bottle",
+        "condition": "near",
+        "distance": 250,
+        "action": "alert"
+    },
+    {
+        "id": 3,
+        "enabled": true,
+        "object1": "person",
+        "object2": null,
+        "condition": "not exists",
+        "distance": 0,
+        "action": "alert"
+    }
+]
