@@ -3,7 +3,6 @@ lucide.createIcons();
 
 // --- Configuration (DO NOT MODIFY, PRESERVES EXISTING BACKEND) ---
 const API_URL = "http://127.0.0.1:8000";
-const WS_URL = "ws://127.0.0.1:8000/ws/alerts";
 
 // --- SPA Navigation Engine ---
 const menuItems = document.querySelectorAll('.menu-item[data-target]');
@@ -13,18 +12,10 @@ const dynamicPageTitle = document.getElementById('dynamic-page-title');
 menuItems.forEach(item => {
     item.addEventListener('click', (e) => {
         e.preventDefault();
-        // Remove active class from all nav items
         menuItems.forEach(nav => nav.classList.remove('active'));
-        // Add to clicked item
         item.classList.add('active');
-        
-        // Update Title text (extract text without the icon)
         dynamicPageTitle.textContent = item.textContent.trim();
-        
-        // Hide all views
         pageViews.forEach(page => page.classList.add('hidden-view'));
-        
-        // Show target view
         const targetId = item.getAttribute('data-target');
         const targetView = document.getElementById(targetId);
         if(targetView) {
@@ -33,22 +24,24 @@ menuItems.forEach(item => {
     });
 });
 
-// --- DOM Elements (Preserved connections) ---
+// --- DOM Elements ---
 const nlpForm = document.getElementById('nlp-rule-form');
 const nlpInput = document.getElementById('nlp-input');
 const btnSubmitNLP = document.getElementById('btn-submit-nlp');
 const rulesTableBody = document.getElementById('rules-table-body');
 const realtimeAlertsFeed = document.getElementById('realtime-alerts-feed');
 const alertCounter = document.getElementById('alert-counter');
-const alertCounterDisplay = document.getElementById('alert-counter-display'); // Added for dashboard stats
+const alertCounterDisplay = document.getElementById('alert-counter-display'); 
 const statRulesDisplay = document.getElementById('stat-rules');
 const statusDot = document.getElementById('status-dot');
 const statusText = document.getElementById('status-text');
 const wsStatus = document.getElementById('ws-status');
 
+// Added data store for live relative time tracking
 let alertCount = 0;
+let alertsDataStore = []; 
 
-// --- 1. Natural Language Rule Generation (Intact Logic) ---
+// --- 1. Natural Language Rule Generation ---
 nlpForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -58,7 +51,7 @@ nlpForm.addEventListener('submit', async (e) => {
     const originalBtnText = btnSubmitNLP.innerHTML;
     btnSubmitNLP.innerHTML = `<i data-lucide="loader" class="spin"></i> Processing via BRAHMA Engine...`;
     btnSubmitNLP.disabled = true;
-    lucide.createIcons(); // re-render icon
+    lucide.createIcons();
 
     try {
         const response = await fetch(`${API_URL}/generate-rule`, {
@@ -76,7 +69,7 @@ nlpForm.addEventListener('submit', async (e) => {
         }
     } catch (error) {
         console.error("NLP Generation Failed:", error);
-        alert("Failed to connect to the BRAHMA backend services.");
+        alert("Failed to connect to the backend services.");
     } finally {
         btnSubmitNLP.innerHTML = originalBtnText;
         btnSubmitNLP.disabled = false;
@@ -84,7 +77,7 @@ nlpForm.addEventListener('submit', async (e) => {
     }
 });
 
-// --- 2. Rules Management (CRUD) (Intact Logic with Premium Table Styling) ---
+// --- 2. Rules Management (CRUD) ---
 async function fetchRules() {
     try {
         const response = await fetch(`${API_URL}/rules`);
@@ -92,7 +85,6 @@ async function fetchRules() {
         
         rulesTableBody.innerHTML = ''; 
         
-        // Update Dashboard Stats
         if(statRulesDisplay) {
             statRulesDisplay.innerHTML = `${rules.length} <span class="trend">Stable</span>`;
         }
@@ -104,7 +96,6 @@ async function fetchRules() {
 
         rules.forEach(rule => {
             const tr = document.createElement('tr');
-            
             const secondaryObj = rule.object2 ? rule.object2.toUpperCase() : "N/A";
             const statusClass = rule.enabled ? "status-active" : "status-inactive";
             const statusText = rule.enabled ? "Online" : "Offline";
@@ -123,81 +114,152 @@ async function fetchRules() {
             rulesTableBody.appendChild(tr);
         });
     } catch (error) {
-        console.error("Failed to fetch BRAHMA rules:", error);
+        console.error("Failed to fetch rules:", error);
     }
 }
 
 window.deleteRule = async function(ruleId) {
     if(!confirm(`WARNING: Are you sure you want to terminate constraint pipeline #00${ruleId}?`)) return;
-
     try {
         const response = await fetch(`${API_URL}/rules/${ruleId}`, { method: 'DELETE' });
-        if (response.ok) {
-            fetchRules();
-        }
+        if (response.ok) fetchRules();
     } catch (error) {
         console.error("Failed to terminate rule:", error);
     }
 };
 
-// --- 3. WebSocket Real-Time Alert Manager (Intact Logic) ---
-function initWebSocket() {
-    const ws = new WebSocket(WS_URL);
+// --- 3. Bulletproof Alert Manager (High-Speed HTTP Polling) ---
+// This bypasses the Python WebSocket thread crash completely!
 
-    ws.onopen = () => {
-        console.log("BRAHMA WebSocket uplink established.");
-        statusDot.className = "status-pulse online";
-        statusText.textContent = "Uplink Established";
-        wsStatus.textContent = "Secured";
-        wsStatus.className = "health-value cyan-text";
-    };
+let lastAlertTime = 0; // Tracks the last time we showed a UI alert to prevent spam
 
-    ws.onmessage = (event) => {
-        const alertData = JSON.parse(event.data);
-        displayAlert(alertData);
-    };
+async function fetchLiveAlerts() {
+    try {
+        const response = await fetch(`${API_URL}/alerts`);
+        if (response.ok) {
+            const alerts = await response.json();
+            
+            // If the backend YOLO pipeline has detected an alert in the current frame
+            if (alerts && alerts.length > 0) {
+                const now = Date.now();
+                
+                // Debounce: Only trigger a new UI card if 3 seconds have passed since the last one
+                if (now - lastAlertTime > 3000) {
+                    alerts.forEach(alert => displayAlert(alert));
+                    lastAlertTime = now;
+                }
+            }
 
-    ws.onclose = () => {
-        console.warn("Uplink severed. Reconnecting to BRAHMA core in 5s...");
+            // Update UI to show successful connection
+            statusDot.className = "status-pulse online";
+            statusText.textContent = "Uplink Established (API)";
+            wsStatus.textContent = "Secured";
+            wsStatus.className = "health-value cyan-text";
+        }
+    } catch (error) {
         statusDot.className = "status-pulse offline";
-        statusText.textContent = "Uplink Severed. Retrying...";
+        statusText.textContent = "Uplink Severed...";
         wsStatus.textContent = "Disconnected";
         wsStatus.className = "health-value";
-        
-        setTimeout(initWebSocket, 5000);
-    };
-
-    ws.onerror = (error) => {
-        console.error("WebSocket sequence error:", error);
-        ws.close();
-    };
+        wsStatus.style.color = "var(--sev-critical-border)";
+    }
 }
 
+// Poll the backend every 500 milliseconds for instant alerts
+setInterval(fetchLiveAlerts, 500);
+
+// ENTERPRISE UPGRADE: Premium Alert Card Generation
 function displayAlert(alertData) {
     const placeholder = realtimeAlertsFeed.querySelector('.feed-placeholder');
     if (placeholder) placeholder.remove();
 
+    // 1. Update Live Counters
     alertCount++;
-    alertCounter.textContent = alertCount;
-    alertCounter.classList.remove('hidden');
-    if(alertCounterDisplay) {
-        alertCounterDisplay.innerHTML = `${alertCount} <span class="trend up">Surge</span>`;
-    }
+    if(alertCounter) { alertCounter.textContent = alertCount; alertCounter.classList.remove('hidden'); }
+    if(alertCounterDisplay) { alertCounterDisplay.innerHTML = `${alertCount} <span class="trend up">Surge</span>`; }
+    
+    const sevCounterCritical = document.querySelector('.sev-count.critical');
+    if(sevCounterCritical) { sevCounterCritical.textContent = alertCount; } 
 
+    // 2. Data Mapping
+    const creationTime = new Date();
+    const uid = 'alert-' + Date.now();
+    alertsDataStore.push({ id: uid, timestamp: creationTime });
+
+    const severityClass = "sev-critical"; 
+    const severityLabel = "CRITICAL";
+    const ruleName = `Constraint #00${alertData.rule_id || 'X'} Breach`;
+    const cameraName = "Camera 01 (Entrance)";
+    const statusLabel = "Active";
+
+    // 3. Build Card HTML
     const alertElement = document.createElement('div');
-    alertElement.className = 'alert-item';
+    alertElement.className = `alert-card ${severityClass}`;
+    alertElement.id = uid;
+    
     alertElement.innerHTML = `
-        <div class="alert-time">SYS_TIME: ${alertData.timestamp} | REF: #00${alertData.rule_id}</div>
-        <div class="alert-msg">${alertData.message}</div>
+        <div class="alert-card-header">
+            
+                <span class="icon">🔴</span> ${severityLabel}
+            </div>
+            <div class="alert-timestamp">
+                <span class="alert-time-absolute">TIME: ${alertData.timestamp || creationTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'})}</span>
+                
+            </div>
+        </div>
+        
+        
+        
+        <div class="alert-meta-grid">
+            <div class="meta-item">
+                <span class="meta-label">Camera</span>
+                <span class="meta-val">${cameraName}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Status</span>
+                <span class="meta-val" style="color: var(--sev-critical-border)">${statusLabel}</span>
+            </div>
+        </div>
+
+        <div class="alert-description">
+            ${alertData.message || "Object detection constraints triggered by YOLO pipeline."}
+        </div>
     `;
 
+    // 4. Inject into feed
     realtimeAlertsFeed.insertBefore(alertElement, realtimeAlertsFeed.firstChild);
 
+    // 5. Cleanup to prevent memory leaks
     if (realtimeAlertsFeed.children.length > 50) {
         realtimeAlertsFeed.removeChild(realtimeAlertsFeed.lastChild);
+        alertsDataStore.shift(); 
     }
 }
 
+// ENTERPRISE UPGRADE: Live Relative Time Engine
+function updateRelativeTimes() {
+    const now = new Date();
+    alertsDataStore.forEach(alert => {
+        const el = document.getElementById(`rel-${alert.id}`);
+        if (!el) return;
+        
+        const diffInSeconds = Math.floor((now - alert.timestamp) / 1000);
+        
+        if (diffInSeconds < 5) {
+            el.textContent = "Just now";
+        } else if (diffInSeconds < 60) {
+            el.textContent = `${diffInSeconds} sec ago`;
+        } else if (diffInSeconds < 3600) {
+            const mins = Math.floor(diffInSeconds / 60);
+            el.textContent = `${mins} min ago`;
+        } else {
+            const hrs = Math.floor(diffInSeconds / 3600);
+            el.textContent = `${hrs} hr ago`;
+        }
+    });
+}
+
+setInterval(updateRelativeTimes, 1000);
+
 // --- Initialize Dashboard ---
 fetchRules();
-initWebSocket();
