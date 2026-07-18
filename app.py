@@ -4,6 +4,9 @@ import uvicorn
 import time
 import asyncio
 
+import webbrowser
+import os
+
 # Import our custom modules
 import backend.api as api_module
 from backend.api import app as fastapi_app
@@ -18,6 +21,9 @@ def run_api_server():
     uvicorn.run(fastapi_app, host="127.0.0.1", port=8000, log_level="error")
 
 def main():
+    # Automatically open the dashboard in the default web browser
+    dashboard_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'frontend', 'index.html'))
+    webbrowser.open(f"/home/shobhandeb/Desktop/Project_Brahma/frontend/index.html")
     print("--- Starting AI Rule-Based Monitoring System (Enterprise Edition) ---")
     
     # 1. Launch the API server in a background thread
